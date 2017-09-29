@@ -17,19 +17,19 @@ sudo ./build.sh<br />
 2、当编译完成之后，可以执行<br />
 sudo ./run.sh<br />
 来运行AI程序了。除了第一次运行而外，以后均不需要再进行第一步操作（再用uninstall.sh除外）<br />
-3、解除安装
+3、卸载安装<br />
 sudo ./uninstall.sh<br />
 运行这个程序会解除编译，并删除系统中的库，当解除编译后重新运行程序需要进行第一步。<br />
-4、重新编译程序
+4、重新编译程序<br />
 sudo ./only_rebuild_ai.sh<br />
-运行这个脚本会重新编译AI程序。前提是已经运行了第一步，并且没有执行删除脚本。<br />
+运行这个脚本会重新编译AI控制程序。前提是已经运行了第一步，并且没有执行卸载脚本。<br />
 <br />
  **目录结构说明** <br />
 lib中为需要的库。<br />
 aicontroler中为代码<br />
 <br />
  **运行环境** <br />
-原则上是支持任何linux系统的，只要安装好相关的库。不过我编译和运行环境都是ubuntu16.04，其他的需要自行测试。不支持windows，需要的自行移植。<br />
+原则上是支持任何linux系统的，只要安装好相关的库。经过实际测试，Ubuntu、Debian只要安装了相关的库，都可以正常运行，Centos暂未测试。不支持windows，需要的自行移植。<br />
 <br />
 引用的一些代码、库和资料：<br />
 https://curl.haxx.se/<br />
@@ -37,3 +37,4 @@ http://www.alsa-project.org/main/index.php/Main_Page<br />
 http://www.mpg123.de/<br />
 http://blog.csdn.net/ownWell/article/details/8114121<br />
 http://blog.csdn.net/freeze_z/article/details/44310245<br />
+（还没有写参考资料未列出）
