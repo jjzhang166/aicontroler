@@ -5,7 +5,7 @@
 搭建步骤和演示视频戳：https://www.geeiot.net/thread-1151-1-1.html
 </p>
 <br />
-<p style="color:#FF0000">重要！使用前请先修改ai_neo2/src/config.h中的百度API和图灵机器人API为自己的API，毕竟我也是用的免费的[\笑哭]。创建项目之后即可免费获取。</p>
+<p>重要！使用前请先修改ai_neo2/src/config.h中的百度API和图灵机器人API为自己的API，毕竟我也是用的免费的[\笑哭]。创建项目之后即可免费获取。</p>
 百度语音识别官网：http://yuyin.baidu.com/<br />
 图灵机器人官网：http://www.tuling123.com/<br />
 申请API方法也会在搭建步骤中详细描述。<br />
