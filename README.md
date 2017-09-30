@@ -25,8 +25,20 @@ sudo ./only_rebuild_ai.sh<br />
 运行这个脚本会重新编译AI控制程序。前提是已经运行了第一步，并且没有执行卸载脚本。<br />
 <br />
  **目录结构说明** <br />
-lib中为需要的库。<br />
-aicontroler中为代码<br />
+1、文件夹aicontroler<br />
+文件中的src为程序代码，build为存放编译后的可执行文件（测试版本还存放配置文件）。<br />
+2、文件夹lib<br />
+程序运行所需要的库。有alsa-lib、libmpg123、curl以及tools中的npi-config、和Nanopi NEO2、OrangePi Zero Plus各自的WinrgPi。<br />
+3、文件夹test<br />
+测试版程序，不需要WiringPi就能运行，所以能够在开发板和电脑上面运行。配置文件在build文件夹中。<br />
+4、脚本build.sh<br />
+自动编译安装脚本。会自动安装相关包、编译安装依赖库和aicontroler程序。一键编译，方便快捷。只有第一次运行或者运行了uninstall.sh才需要运行这个脚本，运行这个脚本会花较长时间，且磁盘空间必须要有2G的剩余。<br />
+5、脚本only_rebuild_ai.sh<br />
+只重新编译aicontroler程序，用于修改了内置配置文件之后重新编译程序。<br />
+6、脚本run.sh<br />
+运行程序。可以到aicontroler/build中直接执行程序。<br />
+7、脚本uninstall.sh<br />
+卸载程序但不会卸载已经安装的软件包。<br />
 <br />
  **运行环境** <br />
 原则上是支持任何linux系统的，只要安装好相关的库。经过实际测试，Ubuntu、Debian只要安装了相关的库，都可以正常运行，Centos暂未测试。不支持windows，需要的自行移植。<br />
