@@ -21,6 +21,11 @@
 #include "ai.h"
 #include "control.h"
 
+/*
+ * 存放录音数据Buffer最大长度，这个选项最好不要调整
+ */
+#define MAX_WAV_SIZE  6000000
+
 int _COUNT = 0;                 //记录总帧数
 char _OLD_VOICE_BUFFER[MAX_WAV_SIZE];
 int _OLD_VOICE_TOTAL_COUNT = 0;
@@ -194,7 +199,7 @@ int start_record(struct WaveHeader *hdr, int envl)
 	snd_pcm_hw_params_t *params;
 	unsigned int sampleRate = hdr->sample_rate;
 	snd_pcm_uframes_t frames = 64;
-	char *buffer;
+	char *buffer,*nowTime;
 	char totalBuff[MAX_WAV_SIZE] = { 0 };
 	time_t starttimes = start_time_s();
 	//pcm数据最大不会超过32767，所以大于323767没有意义了
@@ -257,7 +262,7 @@ int start_record(struct WaveHeader *hdr, int envl)
 		snd_pcm_close(handle);
 		return err;
 	}
-	/* Two channels (stereo) */
+	/* set channels (stereo) */
 	err = snd_pcm_hw_params_set_channels(handle, params,
 			hdr->number_of_channels);
 	if (err)
@@ -372,7 +377,8 @@ int start_record(struct WaveHeader *hdr, int envl)
 			sum = 0;
 		}
 		else if (work && (avr < envl + vladd))
-		{  //在录音，但是音量低于阀值 就是没说话了
+		{
+			//在录音，但是音量低于阀值 就是没说话了
 			count++;
 			if (count >= VOICE_SILENCE_COUNT)
 			{   //多少帧的音量都没有超过阀值
@@ -387,6 +393,7 @@ int start_record(struct WaveHeader *hdr, int envl)
 			state = 0;
 			work = 0;
 		}
+		avr = 0;
 		if (state && !work)
 		{   //记录第一帧和之前的几帧数据(就是开始录音)
 			err_log("录音中...\n");
@@ -462,10 +469,10 @@ int start_record(struct WaveHeader *hdr, int envl)
 		memset(buffer, 0, size);
 	}
 	free(buffer);
-	write_speech_light_state(0);  //关闭录音状态指示灯
 	//必须先关闭PCM，后面语音识别之后播放识别内容需要用到。
 	snd_pcm_drain(handle);
 	snd_pcm_close(handle);
+	write_speech_light_state(0);  //关闭录音状态指示灯
 	//是否保存录音音频文件
 	if (SAVE_RECORD_DATA)
 	{
@@ -473,16 +480,17 @@ int start_record(struct WaveHeader *hdr, int envl)
 	}
 	//开始调用语音识别
 	speech_record(totalBuff, _COUNT);
+	//清空相关缓冲区
 	memset(totalBuff, 0, MAX_WAV_SIZE);
 	memset(_OLD_VOICE_BUFFER, 0, MAX_WAV_SIZE);
+	//重置计数器
 	_OLD_VOICE_TEMP_COUNT = 0;
 	_OLD_VOICE_TOTAL_COUNT = 0;
 	_COUNT = 0;
-	char *nowTime = (char *) malloc(1);  //获取当前时间
+	//结束本次识别
 	now_time(&nowTime);
 	err_log("本次识别结束！当前时间:%s\n", nowTime);
 	free(nowTime);
-	nowTime = NULL;  //设置指针为空
 	return 0;
 }
 
@@ -547,7 +555,7 @@ int test_envirment_volume(struct WaveHeader *hdr)
 		snd_pcm_close(handle);
 		return -4;
 	}
-	/* Two channels (stereo) */
+	/* set channels (stereo) */
 	err = snd_pcm_hw_params_set_channels(handle, params,
 			hdr->number_of_channels);
 	if (err)

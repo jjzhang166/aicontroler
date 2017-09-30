@@ -26,7 +26,7 @@ int tl_reboot(char *input, char **result, size_t *outlen)
 		err_log("Tuling input is empty!\n");
 		return -1;
 	}
-	char *url = TULING_API_URL;
+	char *url = "http://www.tuling123.com/openapi/api";
 	char *post = (char *) calloc(1, sizeof(char));
 	size_t postsize = 0;
 	//post的数据长度
