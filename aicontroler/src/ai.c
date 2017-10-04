@@ -24,6 +24,11 @@ int find_cmd_local(char *cmdstr);
 int process_cmd(int local, char **result);
 
 /*
+ * 灯控GPIO pin
+ */
+int LIGHT_PIN = 3;
+
+/*
  * 将需要的指令填到这里面格式为编号+指令内容,例：001退出系统
  * 然后在process_cmd中进行处理指令
  */
@@ -47,7 +52,7 @@ char *cmdlist[] = { "001.0退出系统", "002.0退出程序", "003.0关闭程序
 int speech_record(char *buffer, int count)
 {
 	err_log("录音完成，进入识别阶段！\n");
-	write_bdtts_light_state(1);
+	set_bdtts_light_state(1);
 	if (count != 0 && (buffer != NULL || !strcmp(buffer, "")))
 	{
 		char *result = (char *) calloc(1, sizeof(char));
@@ -117,7 +122,7 @@ int speech_record(char *buffer, int count)
 		err_log("音频数据为空！\n");
 		return -3;
 	}
-	write_bdtts_light_state(0);
+	set_bdtts_light_state(0);
 	return 0;
 }
 
@@ -166,7 +171,7 @@ int process_cmd(int local, char **result)
 	case 14:
 	case 15:
 	case 20:
-		write_bedroom_light_state(1);
+		set_output_pin_state(LIGHT_PIN,1);
 		back = "已经为您打开电灯！";
 		break;
 	case 16:  //关灯
@@ -174,7 +179,7 @@ int process_cmd(int local, char **result)
 	case 18:
 	case 19:
 	case 21:
-		write_bedroom_light_state(0);
+		set_output_pin_state(LIGHT_PIN,0);
 		back = "已经为您关闭电灯！";
 		break;
 	default:  //未识别到内容

@@ -12,14 +12,14 @@
 /*
  * 百度语音识别API参数
  */
-#define BAIDU_CUID "10080037"
-#define BAIDU_APIKEY "w9dkHrc2Wvsk2rkvNQEGXaOD"
-#define BAIDU_SECRETKEY "mxuRuYmGNYIlU4zSitu0D2tuFGfwHtWW"
+#define BAIDU_CUID "10210356"
+#define BAIDU_APIKEY "6GhGZEfWavkb0dv2AiHlkluD"
+#define BAIDU_SECRETKEY "5044cf86cfbde48cf9915a46489fea53"
 
 /*
  * 图灵机器人API参数
  */
-#define TULING_KEY "48d06abab4464c72b2c6ccd139943032"
+#define TULING_KEY "26a3d15c8f204f6fa2069d5d325a64b0"
 #define TULING_UID "770702827"  //这个UID是自定义的一个ID，有了这个ID可以进行前后文关联
 
 //=========================================================
@@ -114,7 +114,6 @@
 //GPIO
 #define SPEECH_WORK_STATE_PIN 0      //录音指示灯
 #define BDTTS_WORK_STATE_PIN 1       //语音识别工作指示灯
-#define BEDROOM_LIGHT_PIN 2          //灯GPIO
 
 //=========================================================
 

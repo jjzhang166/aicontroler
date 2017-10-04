@@ -135,7 +135,7 @@ int old_voice_data(char *buffer, int count, char **oldbuffer, int *oldcount)
 			}
 		}
 	}
-	if(*oldbuffer != NULL)
+	if (*oldbuffer != NULL)
 	{
 		//重新申请足够的内存空间
 		*oldbuffer = (char *) calloc(_OLD_VOICE_TOTAL_COUNT, sizeof(char));
@@ -199,7 +199,7 @@ int start_record(struct WaveHeader *hdr, int envl)
 	snd_pcm_hw_params_t *params;
 	unsigned int sampleRate = hdr->sample_rate;
 	snd_pcm_uframes_t frames = 64;
-	char *buffer,*nowTime;
+	char *buffer, *nowTime;
 	char totalBuff[MAX_WAV_SIZE] = { 0 };
 	time_t starttimes = start_time_s();
 	//pcm数据最大不会超过32767，所以大于323767没有意义了
@@ -397,11 +397,11 @@ int start_record(struct WaveHeader *hdr, int envl)
 		if (state && !work)
 		{   //记录第一帧和之前的几帧数据(就是开始录音)
 			err_log("录音中...\n");
-			write_speech_light_state(1);   //开启录音状态指示灯
+			set_speech_light_state(1);   //开启录音状态指示灯
 			starttimes = start_time_s();   //记录开始录音的时间
 			int j = 0, lastcount = 0;
 			char *lastBuffer = (char *) calloc(1, sizeof(char));
-			old_voice_data(NULL, 0, &lastBuffer, &lastcount);  //将开始录音之前的数据拷贝到数组当中（取）
+			old_voice_data(NULL, 0, &lastBuffer, &lastcount); //将开始录音之前的数据拷贝到数组当中（取）
 			memcpy(totalBuff, lastBuffer, lastcount);
 			_COUNT = 0 + lastcount;  //开始计数_COUNT
 			if (_COUNT > MAX_WAV_SIZE)
@@ -472,7 +472,7 @@ int start_record(struct WaveHeader *hdr, int envl)
 	//必须先关闭PCM，后面语音识别之后播放识别内容需要用到。
 	snd_pcm_drain(handle);
 	snd_pcm_close(handle);
-	write_speech_light_state(0);  //关闭录音状态指示灯
+	set_speech_light_state(0);  //关闭录音状态指示灯
 	//是否保存录音音频文件
 	if (SAVE_RECORD_DATA)
 	{
