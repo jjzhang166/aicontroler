@@ -79,6 +79,7 @@ int speech_record(char *buffer, int count)
 				if (ret < 0)
 				{
 					err_log("图灵机器人智能应答获取失败！\n");
+					set_bdtts_light_state(0);
 					free(result);
 					return -1;
 				}
@@ -99,6 +100,7 @@ int speech_record(char *buffer, int count)
 					if (ret < 0)
 					{
 						err_log("文字转语音失败！\n");
+						set_bdtts_light_state(0);
 						free(result);
 						return -1;
 					}
@@ -110,6 +112,7 @@ int speech_record(char *buffer, int count)
 				if (ret < 0)
 				{
 					err_log("文字转语音失败！\n");
+					set_bdtts_light_state(0);
 					free(result);
 					return -1;
 				}
@@ -120,6 +123,7 @@ int speech_record(char *buffer, int count)
 	else
 	{
 		err_log("音频数据为空！\n");
+		set_bdtts_light_state(0);
 		return -3;
 	}
 	set_bdtts_light_state(0);
