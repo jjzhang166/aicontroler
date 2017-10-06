@@ -44,6 +44,18 @@
 #define SAVE_WAV_FILE_NAME "voice.wav"
 
 /*
+ * 百度语音合成 发音人选择
+ * 0为普通女声，1为普通男生，3为情感合成-度逍遥，4为情感合成-度丫丫，默认为0
+ */
+#define DEFAULT_BDTTS_PER 0
+
+/*
+ * 百度语音合成 音量
+ * 取值0-15，默认为10
+ */
+#define DEFAULT_BDTTS_VOL 10
+
+/*
  * 默认播放设备
  */
 #define DEFAULT_PALY_DEVICE "default"

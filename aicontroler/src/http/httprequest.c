@@ -21,6 +21,9 @@ size_t call_back_request(void *contents, size_t size, size_t nmemb, void *userp)
 	return realsize;
 }
 
+/*
+ * http get请求
+ */
 int http_get_request(char *url, char **result, size_t *memsize)
 {
 	if (url == NULL || !strcmp(url, ""))
@@ -62,6 +65,9 @@ int http_get_request(char *url, char **result, size_t *memsize)
 	return 0;
 }
 
+/*
+ * http post请求
+ */
 int http_post_request(char *url, char *data, char **result, size_t *memsize)
 {
 	if (url == NULL || !strcmp(url, ""))

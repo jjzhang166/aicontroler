@@ -44,13 +44,14 @@ char *cmdlist[] = { "001退出系统", "002退出程序", "003关闭程序", "00
  *     012.2客厅 表示二级指令。让上级指令进行拼接。比如通过1级指令拼接之后就是打开客厅....依次类推就是打开客厅电灯，或者打开客厅冰箱
  * 遗留问题就是我没想好怎么处理多指令，所以没写这个算法了。有时间和兴趣可以想想。
  *
-char *cmdlist[] = { "001.0退出系统", "002.0退出程序", "003.0关闭程序", "004.0确定", "005.0关闭语音",
-		"006.0不要回复", "007.0关闭回复", "008.0打开语音", "009.0开启语音", "010.0开启回复", "011.0是的",
-		"012.1打开","013.2卧室","014.2客厅","015.3电灯","016.1" };
+ char *cmdlist[] = { "001.0退出系统", "002.0退出程序", "003.0关闭程序", "004.0确定", "005.0关闭语音",
+ "006.0不要回复", "007.0关闭回复", "008.0打开语音", "009.0开启语音", "010.0开启回复", "011.0是的",
+ "012.1打开","013.2卧室","014.2客厅","015.3电灯","016.1" };
  */
 
 int speech_record(char *buffer, int count)
 {
+	int retnum = 0;
 	err_log("录音完成，进入识别阶段！\n");
 	set_bdtts_light_state(1);
 	if (count != 0 && (buffer != NULL || !strcmp(buffer, "")))
@@ -81,7 +82,8 @@ int speech_record(char *buffer, int count)
 					err_log("图灵机器人智能应答获取失败！\n");
 					set_bdtts_light_state(0);
 					free(result);
-					return -1;
+					retnum = -1;
+					goto exit;
 				}
 				//如果前一个指令是退出程序，但是现在的指令不是确认指令，重置准备退出状态为０
 				if (_START_EXIT)
@@ -102,7 +104,8 @@ int speech_record(char *buffer, int count)
 						err_log("文字转语音失败！\n");
 						set_bdtts_light_state(0);
 						free(result);
-						return -1;
+						retnum = -2;
+						goto exit;
 					}
 				}
 			}
@@ -114,7 +117,8 @@ int speech_record(char *buffer, int count)
 					err_log("文字转语音失败！\n");
 					set_bdtts_light_state(0);
 					free(result);
-					return -1;
+					retnum = -3;
+					goto exit;
 				}
 			}
 		}
@@ -124,10 +128,11 @@ int speech_record(char *buffer, int count)
 	{
 		err_log("音频数据为空！\n");
 		set_bdtts_light_state(0);
-		return -3;
+		retnum = -4;
+		goto exit;
 	}
-	set_bdtts_light_state(0);
-	return 0;
+	exit: set_bdtts_light_state(0);
+	return retnum;
 }
 
 /*
@@ -143,6 +148,8 @@ int process_cmd(int local, char **result)
 	//正对退出指令
 	if (_START_EXIT && (local == 4 || local == 11))
 	{
+		//关掉识别状态指示灯
+		set_bdtts_light_state(0);
 		err_log("程序已退出!\n");
 		exit(0);
 	}
@@ -175,7 +182,7 @@ int process_cmd(int local, char **result)
 	case 14:
 	case 15:
 	case 20:
-		set_output_pin_state(LIGHT_PIN,1);
+		set_output_pin_state(LIGHT_PIN, 1);
 		back = "已经为您打开电灯！";
 		break;
 	case 16:  //关灯
@@ -183,7 +190,7 @@ int process_cmd(int local, char **result)
 	case 18:
 	case 19:
 	case 21:
-		set_output_pin_state(LIGHT_PIN,0);
+		set_output_pin_state(LIGHT_PIN, 0);
 		back = "已经为您关闭电灯！";
 		break;
 	default:  //未识别到内容

@@ -24,6 +24,7 @@ char *TOKEN = NULL;
 
 int get_baidu_api_token(char **token);
 int getCmd(char *result, char **back);
+int format_tts_words(char *str, char **result);
 
 /*
  * 获取token
@@ -189,54 +190,63 @@ int bd_voice_recognition(char *data, int content_len, char **back)
  */
 int bd_voice_tts(char *tts, char **resultAudio)
 {
+	char *result = (char *) calloc(1, sizeof(char));
 	err_log("文字转语音...\n");
-	int testCode = strlen("汉");  //测试一个汉子的字节数
-	if (strlen(tts) > 125 * testCode)
-	{  //baidu　tts限定１００个字符以内，但是实际测试是可以到１２５左右的。
-		tts = "这已经超出我的应答极限啦！";
+	if (strlen(tts) > 512)
+	{
+		//baidu　tts限定512个字符以内
+		tts = "这已经超出我的应答极限啦！我能回答的内容只能小于512个字母哦～";
 		err_log("回复超出限制，应答：%s\n", tts);
 	}
 	char host[MAX_BUFFER_SIZE];
-	char *result = (char *) calloc(1, sizeof(char));
 	size_t memsize = 0;
 	int ret = 0;
 	if (tts == NULL || !strcmp(tts, ""))
 	{
 		err_log("Tts input is empty!\n");
-		return 0;
+		ret =  -1;
+		goto exit;
 	}
 	//TOKEN为空或者token过期了才重新获取
 	if ((TOKEN == NULL || !strcmp(TOKEN, ""))
 			|| get_time_difference_s(LAST_TIKEN_TIME) > 86400)
 	{
-		int ret = get_baidu_api_token(&TOKEN);
+		ret = get_baidu_api_token(&TOKEN);
 		if (ret < 0)
 		{
 			err_log("Get token failed!\n");
-			return -1;
+			ret = -2;
+			goto exit;
 		}
 	}
+	ret = format_tts_words(tts, &result);
+	if(ret < 0)
+	{
+		printf("Get format tts worlds failed!ret:%d", ret);
+		ret = -3;
+		goto exit;
+	}
 	snprintf(host, sizeof(host),
-			"tsn.baidu.com/text2audio?tex=%s&lan=zh&cuid=%s&ctp=1&tok=%s", tts,
-			BAIDU_CUID, TOKEN);
+				"tsn.baidu.com/text2audio?tex=%s&lan=zh&cuid=%s&ctp=1&vol=%d&per=%d&tok=%s", result,
+				BAIDU_CUID,DEFAULT_BDTTS_VOL,DEFAULT_BDTTS_PER, TOKEN);
 	ret = http_get_request(host, &result, &memsize);
-	if (ret < 0 || memsize == 0)
+	if (ret < 0 || memsize <= 0)
 	{
 		err_log("Get tts result failed!\n");
-		return -1;
+		ret = -4;
+		goto exit;
 	}
 	if (result == NULL || !strcmp(result, "") || memsize == 0)
 	{
 		err_log("Tts result is empty!\n");
-		return -1;
+		ret = -5;
+		goto exit;
 	}
 	*resultAudio = (char *) calloc(memsize + 1, sizeof(char));
 	memcpy(*resultAudio, result, memsize);
-
 	err_log("应答中...\n");
 	if (MP3_PLAY_METHOD == 1)
 	{
-
 		ret = write_get_file(SAVE_TTS_FILE_NAME, *resultAudio, memsize);
 		if (ret < 0)
 		{
@@ -264,9 +274,10 @@ int bd_voice_tts(char *tts, char **resultAudio)
 			}
 		}
 	}
+	exit:
 	memset(host, 0, MAX_BUFFER_SIZE);
 	free(result);
-	return 0;
+	return ret;
 }
 
 /*
@@ -285,6 +296,59 @@ int getCmd(char *result, char **back)
 	get[len] = '\0';
 	*back = (char *) calloc(len + 1, sizeof(char));
 	strcpy(*back, get);
+	return 0;
+}
+
+/*
+ * 去掉将要识别文字中的空格,\t,\r,\n
+ * 并将文本中的相关字符替换为‘,’号
+ */
+int format_tts_words(char *str, char **result)
+{
+	char tempWords[2048] = { '\0' };
+	int lastnull = 1, aclen = 0;
+	if (str == NULL || !strcmp(str, ""))
+	{
+		printf("Tts str is empty!\n");
+		return -1;
+	}
+	int slen = strlen(str);
+	if (slen > 2048)
+	{
+		printf("Tts str is out of buffer!\n");
+		return -2;
+	}
+	for (int i = 0; i < slen; i++)
+	{
+		if ((str[i] == (char) 0 || str[i] == (char) 9 || str[i] == (char) 10
+				|| str[i] == (char) 13 || str[i] == (char) 32) && lastnull)
+		{
+			continue;
+		}
+		else if ((str[i] == (char) 0 || str[i] == (char) 9
+				|| str[i] == (char) 10 || str[i] == (char) 13
+				|| str[i] == (char) 32 || str[i] == (char) 9) && !lastnull)
+		{
+			lastnull = 1;
+			tempWords[aclen] = ',';
+			aclen++;
+		}
+		else
+		{
+			if (str[i] == ',')
+			{
+				lastnull = 1;
+			}
+			else
+			{
+				lastnull = 0;
+			}
+			tempWords[aclen] = str[i];
+			aclen++;
+		}
+	}
+	*result = (char *) calloc(aclen + 1, sizeof(char));
+	strncpy(*result, tempWords, aclen + 1);
 	return 0;
 }
 
