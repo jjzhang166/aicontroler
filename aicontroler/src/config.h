@@ -46,12 +46,13 @@
 /*
  * 默认播放设备
  */
-#define DEFAULT_PALY_DEVICE "plughw:0,0"
+#define DEFAULT_PALY_DEVICE "default"
 
 /*
  * 默认录音设备
+ * 如果树莓派是外置声卡，此处应该修改为plughw:0,0或其他
  */
-#define DEFAULT_RECORD_DEVICE "plughw:0,0"
+#define DEFAULT_RECORD_DEVICE "default"
 
 //=========================================================
 
@@ -82,20 +83,20 @@
 #define SAVE_LAST_FRAME 60
 
 /*
+ * 连续多少帧大于阀值才开始录音
+ */
+#define VOICE_MAX_COUNT 20
+
+/*
  * 当检测到　环境音量>初始音量＋这个值 的时候，开始录音
  * 如果想要灵敏度高一点的话，就调低这个值。自行调整
  */
-#define VOICE_THRESHOLD 400
+#define VOICE_THRESHOLD 300
 
 /*
  * 录音过程中超过多少帧小于阀值，停止录音。更具语速来调整，不要过低或者过高
  */
 #define VOICE_SILENCE_COUNT 150
-
-/*
- * 连续多少帧大于阀值才开始录音
- */
-#define VOICE_MAX_COUNT 20
 
 /*
  * 环境音量测试次数
