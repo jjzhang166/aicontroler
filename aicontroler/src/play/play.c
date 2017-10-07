@@ -9,15 +9,14 @@
 #include <mpg123.h>
 #include <unistd.h>
 
-
-#include "../play/play.h"
+#include "play.h"
 #include "../err_log.h"
 #include "../config.h"
 
 /*
  based on mpglib (and libmpg123 sample program), code might have been revisited/rewritten, not sure.
  */
-char *alsa_dev = (char *)DEFAULT_PALY_DEVICE;
+char *alsa_dev = (char *) DEFAULT_PALY_DEVICE;
 
 int mp3_player_from_mem(unsigned char *audiodata, int content_len)
 {
@@ -33,118 +32,125 @@ int mp3_player_from_mem(unsigned char *audiodata, int content_len)
 	int ret = mpg123_init();
 	if (ret < 0)
 	{
-		printf("MPG123 init failed!\n");
+		err_log("MPG123 init failed!\n");
 		return -3;
 	}
 	m = mpg123_new(NULL, &retval);
 	if (!m)
 	{
-		fprintf(stderr, "Unable to init libmpg123: %s\n",
+		err_log("Unable to init libmpg123: %s\n",
 				mpg123_plain_strerror(retval));
 		return -4;
 	}
+	if (mpg123_param(m, MPG123_VERBOSE, 2, 0) != MPG123_OK) //解码设置
+	{
+		err_log("Set mpg123_param failed!\n", content_len);
+		return -5;
+	}
 	if (mpg123_open_feed(m) != MPG123_OK)
 	{
-		fprintf(stderr, "Unable to open datastream!Len:%d\n", content_len);
-		return -5;
+		err_log("Unable to open datastream!Len:%d\n", content_len);
+		return -6;
 	}
 	retval = mpg123_decode(m, audiodata, content_len, NULL, 0, &lretval);	//解码
 	if (retval == MPG123_NEW_FORMAT)
 	{
 		if (mpg123_getformat(m, &rate, &channels, &retval) != MPG123_OK)
 		{
-			fprintf(stderr, "Error trying to parse stream!\n");
-			return -6;
+			err_log("Error trying to parse stream!\n");
+			return -7;
 		}
 	}
 	else
 	{
-		fprintf(stderr, "No new format rules? (%s) Ayeeee!\n",
+		err_log("[GET FORMAT]No new format rules? (%s) Ayeeee!\n",
 				mpg123_plain_strerror(retval));
-		return -7;
+		return -8;
 	}
 	// Open PCM device for playback
 	if ((err = snd_pcm_open(&playback_handle, alsa_dev, SND_PCM_STREAM_PLAYBACK,
 			0)) < 0)
 	{
-		printf("ERROR: Cannot open pcm device. %s\n", snd_strerror(err));
-		return -1;
+		err_log("ERROR: Cannot open pcm device. %s\n", snd_strerror(err));
+		return -9;
 	}
 	// Allocate hardware parameters
 	if ((err = snd_pcm_hw_params_malloc(&hw_params)) < 0)
 	{
-		printf("ERROR: Cannot allocate hardware parameters. %s\n",
+		err_log("ERROR: Cannot allocate hardware parameters. %s\n",
 				snd_strerror(err));
-		return -2;
+		return -10;
 	}
 	// Initialize parameters with default values
 	if ((err = snd_pcm_hw_params_any(playback_handle, hw_params)) < 0)
 	{
-		printf("ERROR: Cannot initialize hardware parameters. %s\n",
+		err_log("ERROR: Cannot initialize hardware parameters. %s\n",
 				snd_strerror(err));
-		return -8;
+		return -11;
 	}
 	// Setting hardware parameters
 	if ((err = snd_pcm_hw_params_set_access(playback_handle, hw_params,
 			SND_PCM_ACCESS_RW_INTERLEAVED)) < 0)
 	{
-		printf("ERROR: Cannot set interleaved mode. %s\n", snd_strerror(err));
-		return -9;
+		err_log("ERROR: Cannot set interleaved mode. %s\n", snd_strerror(err));
+		return -12;
 	}
 	if ((err = snd_pcm_hw_params_set_format(playback_handle, hw_params,
 			SND_PCM_FORMAT_S16_LE)) < 0)
 	{
-		printf("ERROR: Cannot set PCM format. %s\n", snd_strerror(err));
-		return -10;
+		err_log("ERROR: Cannot set PCM format. %s\n", snd_strerror(err));
+		return -13;
 	}
 	if ((err = snd_pcm_hw_params_set_channels_near(playback_handle, hw_params,
 			(unsigned int *) &channels)) < 0)
 	{
-		printf("ERROR: Cannot set number of channels. %s\n", snd_strerror(err));
-		return -11;
+		err_log("ERROR: Cannot set number of channels. %s\n",
+				snd_strerror(err));
+		return -14;
 	}
 	if ((err = snd_pcm_hw_params_set_rate_near(playback_handle, hw_params,
 			(unsigned int *) &rate, 0)) < 0)
 	{
-		printf("ERROR: Cannot set plyabck rate. %s\n", snd_strerror(err));
-		return -12;
+		err_log("ERROR: Cannot set plyabck rate. %s\n", snd_strerror(err));
+		return -15;
 	}
 	if ((err = snd_pcm_hw_params_set_period_size_near(playback_handle,
 			hw_params, &frames, 0)) < 0)
 	{
-		printf("cannot set period size (%s)\n", snd_strerror(err));
-		return -1;
+		err_log("cannot set period size (%s)\n", snd_strerror(err));
+		return -16;
 	}
 	if ((err = snd_pcm_hw_params(playback_handle, hw_params)) < 0)
 	{
-		printf("ERROR: Cannot set hardware parameters. %s\n",
+		err_log("ERROR: Cannot set hardware parameters. %s\n",
 				snd_strerror(err));
-		return -13;
+		return -17;
 	}
 	if ((err = snd_pcm_hw_params_get_channels(hw_params,
 			(unsigned int *) &channels)) < 0)
 	{
-		printf("Playback ERROR: Can't get channel number. %s\n",
+		err_log("Playback ERROR: Can't get channel number. %s\n",
 				snd_strerror(err));
-		return -15;
+		return -18;
 	}
 	if ((err = snd_pcm_hw_params_get_rate(hw_params, (unsigned int *) &rate, 0))
 			< 0)
 	{
-		printf("ERROR: Cannot get rate. %s\n", snd_strerror(err));
-		return -16;
+		err_log("ERROR: Cannot get rate. %s\n", snd_strerror(err));
+		return -19;
 	}
 	// Free paraemeters
 	snd_pcm_hw_params_free(hw_params);
 	if ((err = snd_pcm_prepare(playback_handle)) < 0)
 	{
-		printf("Cannont prepare audio interface for use (%s)\n",
+		err_log("Cannont prepare audio interface for use (%s)\n",
 				snd_strerror(err));
-		return -1;
+		return -20;
 	}
 	// Create buffer
 	buffer_size = mpg123_outblock(m);
 	buffer = (unsigned char *) calloc(buffer_size, sizeof(char));
+	int underrun = 0;
 	while (1)
 	{
 		memset(buffer, 0, buffer_size);
@@ -154,28 +160,26 @@ int mp3_player_from_mem(unsigned char *audiodata, int content_len)
 			snd_pcm_drain(playback_handle);	// let it play up until here in the former frequency
 			if (mpg123_getformat(m, &rate, &channels, &retval) != MPG123_OK)
 			{
-				fprintf(stderr,
-						"Error while changing stream bitrate/audio format.\n");
+				err_log("Error while changing stream bitrate/audio format.\n");
 				break;
 			}
 			if ((err = snd_pcm_hw_params_set_rate_near(playback_handle,
 					hw_params, (unsigned int *) &rate, 0)) < 0)
 			{
-				fprintf(stderr, "Could not set sample rate to %d (%s)\n",
-						(int) rate, snd_strerror(err));
+				err_log("Could not set sample rate to %d (%s)\n", (int) rate,
+						snd_strerror(err));
 				break;
 			}
 			if ((err = snd_pcm_hw_params_set_channels(playback_handle,
 					hw_params, channels)) < 0)
 			{
-				fprintf(stderr, "Could not set channel count to %d (%s)\n",
-						channels, snd_strerror(err));
+				err_log("Could not set channel count to %d (%s)\n", channels,
+						snd_strerror(err));
 				break;
 			}
 			if ((err = snd_pcm_hw_params(playback_handle, hw_params)) < 0)
 			{
-				fprintf(stderr, "Cannot set parameters (%s)\n",
-						snd_strerror(err));
+				err_log("Cannot set parameters (%s)\n", snd_strerror(err));
 				break;
 			}
 		}
@@ -185,21 +189,37 @@ int mp3_player_from_mem(unsigned char *audiodata, int content_len)
 			{
 				int ret = snd_pcm_writei(playback_handle, buffer,
 						(lretval / (channels << 1)));
-				while (ret < 0)
+				if (ret == -EPIPE)
 				{
-					usleep(2000);
-					if (ret == -EPIPE)
+					/* EPIPE means underrun */
+					err_log("An underrun occurred.error code %d\n", ret);
+					//完成硬件参数设置，使设备准备好
+					snd_pcm_prepare(playback_handle);
+					underrun++;
+					if (underrun < 4)
 					{
-						/* EPIPE means underrun */
-						fprintf(stderr, "underrun occurred\n");
-						//完成硬件参数设置，使设备准备好
-						snd_pcm_prepare(playback_handle);
+						continue;
 					}
-					else if (ret < 0)
+					else
 					{
-						fprintf(stderr, "error from writei: %s\n",
-								snd_strerror(ret));
+						break;
 					}
+				}
+				else if (ret == -EBADFD)
+				{
+					err_log("PCM is not in the right state.error code %d\n",
+							ret);
+					break;
+				}
+				else if (ret == -ESTRPIPE)
+				{
+					err_log("A suspend event occurred.error code %d\n", ret);
+					break;
+				}
+				else if (ret < 0)
+				{
+					err_log("error from writei: %s\n", snd_strerror(ret));
+					break;
 				}
 			}
 			else
@@ -217,7 +237,7 @@ int mp3_player_from_mem(unsigned char *audiodata, int content_len)
 		}
 		else
 		{
-			fprintf(stderr, "No new format rules? (%s) Ayeeee!\n",
+			err_log("[DECODE]No new format rules? (%s) Ayeeee!\n",
 					mpg123_plain_strerror(retval));
 			break;
 		}
@@ -238,7 +258,7 @@ int mp3_player_from_file(char *mp3path)
 {
 	if (mp3path == NULL || !strcmp(mp3path, ""))
 	{
-		err_log("Mp3 path is empty!\n");
+		err_log("MP3 path is empty!\n");
 		return -1;
 	}
 	char *cmd = "sox -q ";

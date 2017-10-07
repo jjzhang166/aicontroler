@@ -28,6 +28,8 @@ struct base_parameter
 	int voice_max_count;
 	int test_envir_time;
 	int remove_enterface_time;
+	int default_bdtts_per;
+	int default_bdtts_vol;
 	char *default_play_device;
 	char *default_record_device;
 };

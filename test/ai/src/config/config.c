@@ -44,6 +44,8 @@ int get_config_from_file()
 	ini_read_int(conf, "base_set", "voice_max_count", &(base_set.voice_max_count), 20);
 	ini_read_int(conf, "base_set", "test_envir_time", &(base_set.test_envir_time), 600);
 	ini_read_int(conf, "base_set", "remove_enterface_time", &(base_set.remove_enterface_time), 30);
+	ini_read_int(conf, "base_set", "default_bdtts_per", &(base_set.default_bdtts_per), 0);
+	ini_read_int(conf, "base_set", "default_bdtts_vol", &(base_set.default_bdtts_vol), 15);
 	ini_read_str(conf, "base_set", "default_play_device", &(base_set.default_play_device), "default");
 	ini_read_str(conf, "base_set", "default_record_device", &(base_set.default_record_device), "default");
 	//other_set
@@ -58,6 +60,15 @@ int get_config_from_file()
 	ini_read_int(conf, "gpio_set", "bedroom_light_pin", &(gpio_set.bedroom_light_pin),0);
 	//free
 	ini_free(conf);
+
+	if(base_set.default_bdtts_per < 0 || base_set.default_bdtts_per >4)
+	{
+		base_set.default_bdtts_per = 0;
+	}
+	if(base_set.default_bdtts_vol <= 0 || base_set.default_bdtts_vol >15)
+	{
+		base_set.default_bdtts_vol = 10;
+	}
 	return 0;
 }
 

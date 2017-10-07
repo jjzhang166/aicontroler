@@ -58,7 +58,14 @@ void err_log(char* fmt, ...)
 			case 'd':
 			case 'i':
 				vargint = va_arg(vp, int);
-				printdec(vargint);
+				if (vargint == 0)
+				{
+					printch('0');
+				}
+				else
+				{
+					printdec(vargint);
+				}
 				break;
 			case 'f':
 				vargflt = va_arg(vp, double);
@@ -116,7 +123,7 @@ void printdec_do(int dec)
 
 void printdec(int dec)
 {
-	if(dec < 0)
+	if (dec < 0)
 	{
 		dec = -dec;
 		printch('-');

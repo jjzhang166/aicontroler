@@ -23,7 +23,7 @@ time_t LAST_TIKEN_TIME;
 char *TOKEN = NULL;
 
 int get_baidu_api_token(char **token);
-int getCmd(char *result, char **back);
+int get_cmd(char *result, char **back);
 int format_tts_words(char *str, char **result);
 
 /*
@@ -148,7 +148,7 @@ int bd_voice_recognition(char *data, int content_len, char **back)
 				if (item)
 				{
 					char *getdata = cJSON_GetArrayItem(item, 0)->valuestring;
-					int ret = getCmd(getdata, &resultContent);
+					int ret = get_cmd(getdata, &resultContent);
 					if (ret < 0)
 					{
 						err_log("Get baidu speech rec content failed!\n");
@@ -203,7 +203,7 @@ int bd_voice_tts(char *tts, char **resultAudio)
 	int ret = 0;
 	if (tts == NULL || !strcmp(tts, ""))
 	{
-		err_log("Tts input is empty!\n");
+		err_log("TTS input is empty!\n");
 		ret =  -1;
 		goto exit;
 	}
@@ -242,7 +242,7 @@ int bd_voice_tts(char *tts, char **resultAudio)
 		ret = -5;
 		goto exit;
 	}
-	*resultAudio = (char *) calloc(memsize + 1, sizeof(char));
+	*resultAudio = (char *) calloc(memsize, sizeof(char));
 	memcpy(*resultAudio, result, memsize);
 	err_log("应答中...\n");
 	if (MP3_PLAY_METHOD == 1)
@@ -283,7 +283,7 @@ int bd_voice_tts(char *tts, char **resultAudio)
 /*
  * 去掉百度语音识别之后的最后一个中文符号
  */
-int getCmd(char *result, char **back)
+int get_cmd(char *result, char **back)
 {
 	if (result == NULL || !strcmp(result, ""))
 	{
