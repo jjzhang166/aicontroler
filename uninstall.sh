@@ -1,4 +1,3 @@
-
 echo ===================开始执行清除脚本========================
 cd aicontroler/build
 make clean
@@ -16,4 +15,3 @@ sudo make uninstall
 make clean
 cd ../..
 echo =======================全部完成============================
-
