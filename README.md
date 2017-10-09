@@ -4,14 +4,14 @@
 其中GPIO的控制方式为wiringPi，鉴于很多官方系统已经预装了wiringPi，所以在程序附带的库中，并未放入。如果需要，请自行安装wiringPi。<br />
 搭建步骤和演示视频戳：https://www.geeiot.net/thread-1151-1-1.html
 </p>
-<p>重要！使用前请先修改ai_neo2/src/config.h中的百度API和图灵机器人API为自己的API，毕竟我也是用的免费的[\笑哭]。创建项目之后即可免费获取。</p>
+<p>重要！使用前请先修改ai_neo2/src/config.h中的百度API和图灵机器人API为自己的API，毕竟我也是用的免费的[\笑哭]。在各自官网创建项目之后即可免费获取。</p>
 百度语音识别官网：http://yuyin.baidu.com/<br />
 图灵机器人官网：http://www.tuling123.com/<br />
 申请API方法也会在搭建步骤中详细描述。<br />
 <br />
  **未来计划** <br />
 1、开发基于2.4G模块或者433模块的远程控制开关。<br />
-2、遥控器的开发<br />
+2、接入智能家居控制中心<br />
 <br />
  **脚本说明** <br />
 1、在第一次运行程序之前，务必执行 <br />
@@ -52,4 +52,4 @@ http://www.alsa-project.org/main/index.php/Main_Page<br />
 http://www.mpg123.de/<br />
 http://blog.csdn.net/ownWell/article/details/8114121<br />
 http://blog.csdn.net/freeze_z/article/details/44310245<br />
-（还没有写参考资料未列出）
+（还有一些参考资料未列出）
