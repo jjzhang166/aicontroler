@@ -261,7 +261,7 @@ int mp3_player_from_file(char *mp3path)
 		err_log("MP3 path is empty!\n");
 		return -1;
 	}
-	char *cmd = "sox -q ";
+	char *cmd = "play -q ";
 	char *play = (char *) calloc(strlen(cmd) + strlen(mp3path) + 1,
 			sizeof(char));
 	sprintf(play, "%s%s", cmd, mp3path);
