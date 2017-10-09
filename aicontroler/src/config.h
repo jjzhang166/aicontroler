@@ -103,12 +103,12 @@
  * 当检测到　环境音量>初始音量＋这个值 的时候，开始录音
  * 如果想要灵敏度高一点的话，就调低这个值。自行调整
  */
-#define VOICE_THRESHOLD 400
+#define VOICE_THRESHOLD 300
 
 /*
  * 录音过程中超过多少帧小于阀值，停止录音。更具语速来调整，不要过低或者过高
  */
-#define VOICE_SILENCE_COUNT 150
+#define VOICE_SILENCE_COUNT 100
 
 /*
  * 环境音量测试次数
