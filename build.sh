@@ -3,17 +3,17 @@ sudo apt-get update
 echo ===================配置系统环境完成========================
 echo ...
 echo =====================安装相关软件==========================
-sudo apt-get install -y make
-sudo apt-get install -y xmlto libasound2-dev
-sudo apt-get install -y curl
-sudo apt-get install -y linux-sound-base
-sudo apt-get install -y oss4-base
-sudo apt-get install -y alsa-base
-sudo apt-get install -y alsa-utils
-sudo apt-get install -y alsa-oss
-sudo apt-get install -y mpg123
-sudo apt-get install -y sox
-sudo apt-get install -y sox libsox-fmt-all
+sudo apt install -y make
+sudo apt install -y xmlto libasound2-dev
+sudo apt install -y curl
+sudo apt install -y linux-sound-base
+sudo apt install -y oss4-base
+sudo apt install -y alsa-base
+sudo apt install -y alsa-utils
+sudo apt install -y alsa-oss
+sudo apt install -y mpg123
+sudo apt install -y sox
+sudo apt install -y sox libsox-fmt-all
 echo ===================安装相关软件完成========================
 echo ...
 echo =====================编译相关软件==========================
