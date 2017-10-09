@@ -1,6 +1,6 @@
 # 智能语音控制中心
-<p>基于百度语音识别、语音合成和图灵机器人的智能语音控制中心。程序自动适配环境音量，取适当阀值当说话后才开始录音。加入偶发性声音检测机制，不会对突然性的声音做出处理。此程序能够在Nanopi Neo/Neo2、OrangePi Zero Plus(H5)上面正常运行。但不建议在树莓派上面运行，经过测试，虽然此程序在树莓派上面也可以运行，但是树莓派麦克风声音实在太小了，语音识别结果很不理想。<br />
-程序依赖于curl、mpg123和asound。但是多安装了一个mp3播放器，作为百度TTS MP3数据播放的第二种方式。
+<p>基于百度语音识别、语音合成和图灵机器人的智能语音控制中心。程序自动适配环境音量，取适当阀值当说话后才开始录音。加入偶发性声音检测机制，不会对突然性的声音做出处理。此程序能够在Nanopi Neo/Neo2、OrangePi Zero Plus(H5)上面正常运行，但不建议在树莓派上面运行。经过测试，虽然此程序在树莓派上面也可以运行，但是树莓派麦克风声音实在太小了，语音识别结果很不理想。<br />
+程序依赖于curl、mpg123和alsa。但是多安装了一个mp3播放器，作为百度TTS MP3数据播放的第二种方式。
 其中GPIO的控制方式为wiringPi，鉴于很多官方系统已经预装了wiringPi，所以在程序附带的库中，并未放入。如果需要，请自行安装wiringPi。<br />
 搭建步骤和演示视频戳：https://www.geeiot.net/thread-1151-1-1.html
 </p>
@@ -31,7 +31,7 @@ sudo ./only_rebuild_ai.sh<br />
 1、文件夹aicontroler<br />
 文件中的src为程序代码，build为存放编译后的可执行文件（测试版本还存放配置文件）。<br />
 2、文件夹lib<br />
-程序运行所需要的库。有alsa-lib、libmpg123、curl以及tools中的npi-config、和Nanopi NEO2、OrangePi Zero Plus各自的WinrgPi。<br />
+程序运行所需要的库。有alsa-lib、libmpg123、curl以及tools中的npi-config、和树莓派、Nanopi NEO2、OrangePi Zero Plus各自的WinrgPi。<br />
 3、文件夹test<br />
 测试版程序，不需要WiringPi就能运行，所以能够在开发板和电脑上面运行。配置文件在build文件夹中。<br />
 4、脚本build.sh<br />
