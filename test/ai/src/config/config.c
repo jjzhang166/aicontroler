@@ -71,7 +71,7 @@ int get_config_from_file()
 	{
 		base_set.default_bdtts_vol = 10;
 	}
-	if(other_set.is_raspi == 1)
+	if(other_set.is_raspi == 1 && !strcmp(base_set.default_record_device,"default"))
 	{
 		base_set.default_record_device = "plughw:1,0";
 	}

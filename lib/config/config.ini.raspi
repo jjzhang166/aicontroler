@@ -38,7 +38,7 @@ default_bdtts_vol = 15
 ;默认播放设备
 default_play_device = default
 ;默认录音设备
-default_record_device = default
+default_record_device = plughw:1,0
 
 [other_set]
 ;是否为树莓派
