@@ -49,6 +49,8 @@ int get_config_from_file()
 	ini_read_str(conf, "base_set", "default_play_device", &(base_set.default_play_device), "default");
 	ini_read_str(conf, "base_set", "default_record_device", &(base_set.default_record_device), "default");
 	//other_set
+	ini_read_int(conf, "other_set", "is_raspi", &(other_set.is_raspi), 0);
+	ini_read_int(conf, "other_set", "mic_soundamp_factor", &(other_set.mic_soundamp_factor), 0);
 	ini_read_int(conf, "other_set", "is_save_tts_data", &(other_set.is_save_tts_data), 0);
 	ini_read_str(conf, "other_set", "save_tts_data_name", &(other_set.save_tts_data_name), "default");
 	ini_read_int(conf, "other_set", "is_save_record_data", &(other_set.is_save_record_data),0);
@@ -68,6 +70,10 @@ int get_config_from_file()
 	if(base_set.default_bdtts_vol <= 0 || base_set.default_bdtts_vol >15)
 	{
 		base_set.default_bdtts_vol = 10;
+	}
+	if(other_set.is_raspi == 1)
+	{
+		base_set.default_record_device = "plughw:1,0";
 	}
 	return 0;
 }

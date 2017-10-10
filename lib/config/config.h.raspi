@@ -27,7 +27,7 @@
 /*
  * 是否为树莓派
  */
-#define IS_RASPBERRYPI 0
+#define IS_RASPBERRYPI 1
 
 /*
  * 麦克风采集音频放大倍数
@@ -35,7 +35,7 @@
  * 值范围 1 - 100 表示放大倍数
  * 有且仅当上面值为1时，这个值才会起作用
  */
-#define MIC_SOUNDAMP_FACTOR 10
+#define MIC_SOUNDAMP_FACTOR 40
 
 /*
  * 是否保存百度返回的tts文件

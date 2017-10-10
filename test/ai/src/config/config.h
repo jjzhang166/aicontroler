@@ -36,6 +36,8 @@ struct base_parameter
 
 struct other_parameter
 {
+	int is_raspi;
+	int mic_soundamp_factor;
 	int is_save_tts_data;
 	char *save_tts_data_name;
 	int is_save_record_data;

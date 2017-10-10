@@ -34,6 +34,9 @@ char *device = (char *) DEFAULT_RECORD_DEVICE;  //录音设备
 
 //计算一次采样的音频声音大小
 int pcm_db_average(char* ptr, size_t size);
+//对采集的音频进行放大
+void pcm_volume_control(char *in_buffer, int in_size, char **out_buffer,
+		int in_vol);
 //开始录音
 int start_record(struct WaveHeader *hdr, int envl);
 //存放录音之前的数据
@@ -86,6 +89,53 @@ int pcm_db_average(char* ptr, size_t size)
 		ndb = v;
 	}
 	return ndb;
+}
+
+/*
+ * 对采集的音频进行放大
+ * 参考PCM格式：http://blog.csdn.net/ownWell/article/details/8114121
+ * 声音放大参考：http://blog.csdn.net/timsley/article/details/50683084
+ */
+void pcm_volume_control(char *in_buffer, int in_size, char **out_buffer,
+		int in_vol)
+{
+	short int value, tmpvol, vol = 0;
+	if (in_buffer == NULL)
+	{
+		return;
+	}
+	*out_buffer = (char *) calloc(in_size, sizeof(char));
+	//判断vol
+	if (in_vol < 0)
+	{
+		vol = -in_vol;
+	}
+	else if (in_vol == 0)
+	{
+		vol = 1;
+	}
+	else if (in_vol > 100)
+	{
+		vol = 100;
+	}
+	else
+	{
+		vol = in_vol;
+	}
+	//按照倍数放大
+	for (int i = 0; i < in_size; i += 2)
+	{
+		memcpy((char*) &value, in_buffer + i, 1);  //低位
+		memcpy((char*) &value + 1, in_buffer + i + 1, 1);  //高位
+		tmpvol = value * vol;  //放大
+		// 下面主要是为了溢出判断
+		if (tmpvol > 32767)
+			tmpvol = 32767;
+		else if (tmpvol < -32768)
+			tmpvol = -32768;
+		memcpy(*out_buffer + i, (char*) &tmpvol, 1);   //低位
+		memcpy(*out_buffer + i + 1, (char*) &tmpvol + 1, 1);   //高位
+	}
 }
 
 /*
@@ -347,9 +397,19 @@ int start_record(struct WaveHeader *hdr, int envl)
 			free(buffer);
 			return err;
 		}
+		//如果是树莓派，将会对采集到的音频进行电子放大
+		if (IS_RASPBERRYPI == 1)
+		{
+			char *tmpbuf = (char *) calloc(1, sizeof(char));
+			pcm_volume_control(buffer, size, &tmpbuf, MIC_SOUNDAMP_FACTOR);
+			memset(buffer, 0, size);
+			memcpy(buffer, tmpbuf, size);
+			free(tmpbuf);
+		}
 		int avr = pcm_db_average(buffer, size);
-		//我也不晓得在ｎａｎｏｐｉ上面会有这个东东
-		if (avr == 32768 && tempi < REMOVE_ENTERFACE_TIME)
+		//我也不晓得在nanopi上面为什么前面几次采样的数据是32768
+		//我这儿的做法是抛弃掉前面 REMOVE_ENTERFACE_TIME 次的异常采样
+		if (avr >= 32767 && tempi < REMOVE_ENTERFACE_TIME)
 		{
 			continue;
 		}
@@ -639,6 +699,15 @@ int test_envirment_volume(struct WaveHeader *hdr)
 			free(buffer);
 			return -13;
 		}
+		//如果是树莓派，将会对采集到的音频进行电子放大
+		if (IS_RASPBERRYPI == 1)
+		{
+			char *tmpbuf = (char *) calloc(1, sizeof(char));
+			pcm_volume_control(buffer, size, &tmpbuf, MIC_SOUNDAMP_FACTOR);
+			memset(buffer, 0, size);
+			memcpy(buffer, tmpbuf, size);
+			free(tmpbuf);
+		}
 		int avrframe = pcm_db_average(buffer, size);
 		//printf("Size:%d  avrframe:%d frames:%d\n",size,avrframe,frames);
 		//消除异常数据
@@ -684,6 +753,7 @@ int init_record()
 		err_log("Error allocating WAV header.\n");
 		return -1;
 	}
+	err_log("录音设备：%s\n", DEFAULT_RECORD_DEVICE);
 	if (MP3_PLAY_METHOD)
 	{
 		err_log("语音播放方式：外置播放软件（sox）\n");

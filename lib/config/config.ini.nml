@@ -19,7 +19,6 @@ default_record_time = 8
 save_last_frame = 60
 ;启动录音阀值 开发板在400左右 电脑在12000左右
 ;这个值决定了启动录音的灵敏度，自行调节
-;在放大10倍的情况下，如果在树莓派上面运行，建议将这个值设置是6000+.
 voice_threshold = 400
 ;连续多少帧大于阀值才开始录音
 ;与上面 voice_threshold 这个参数共同决定了录音灵敏度，但是这个值一般不用修改
@@ -43,7 +42,7 @@ default_record_device = default
 
 [other_set]
 ;是否为树莓派
-is_raspi = 1
+is_raspi = 0
 ;麦克风采集声音的放大倍数
 ;当上面一项 is_raspi 为1时生效
 ;放大倍数范围时 1-100

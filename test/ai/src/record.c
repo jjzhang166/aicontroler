@@ -31,6 +31,9 @@ int _OLD_VOICE_TEMP_COUNT = 0;
 
 //计算一次采样的音频声音大小
 int pcm_db_average(char* ptr, size_t size);
+//对采集的音频进行放大
+void pcm_volume_control(char *in_buffer, int in_size, char **out_buffer,
+		int in_vol);
 //开始录音
 int start_record(struct WaveHeader *hdr, int envl);
 //存放录音之前的数据
@@ -83,6 +86,53 @@ int pcm_db_average(char* ptr, size_t size)
 		ndb = v;
 	}
 	return ndb;
+}
+
+/*
+ * 对采集的音频进行放大
+ * 参考PCM格式：http://blog.csdn.net/ownWell/article/details/8114121
+ * 声音放大参考：http://blog.csdn.net/timsley/article/details/50683084
+ */
+void pcm_volume_control(char *in_buffer, int in_size, char **out_buffer,
+		int in_vol)
+{
+	short int value, tmpvol, vol = 0;
+	if (in_buffer == NULL)
+	{
+		return;
+	}
+	*out_buffer = (char *) calloc(in_size, sizeof(char));
+	//判断vol
+	if (in_vol < 0)
+	{
+		vol = -in_vol;
+	}
+	else if (in_vol == 0)
+	{
+		vol = 1;
+	}
+	else if (in_vol > 100)
+	{
+		vol = 100;
+	}
+	else
+	{
+		vol = in_vol;
+	}
+	//按照倍数放大
+	for (int i = 0; i < in_size; i += 2)
+	{
+		memcpy((char*) &value, in_buffer + i, 1);  //低位
+		memcpy((char*) &value + 1, in_buffer + i + 1, 1);  //高位
+		tmpvol = value * vol;  //放大
+		// 下面主要是为了溢出判断
+		if (tmpvol > 32767)
+			tmpvol = 32767;
+		else if (tmpvol < -32768)
+			tmpvol = -32768;
+		memcpy(*out_buffer + i, (char*) &tmpvol, 1);   //低位
+		memcpy(*out_buffer + i + 1, (char*) &tmpvol + 1, 1);   //高位
+	}
 }
 
 /*
@@ -179,8 +229,8 @@ int now_time(char **outtime)
 	}
 	sprintf(pc, "%d-%d-%d %s:%s:%s", pt->tm_year + 1900, pt->tm_mon + 1,
 			pt->tm_mday, hou, min, sec);
-	*outtime = (char *)calloc(20,sizeof(char));
-	memcpy(*outtime,pc,20);
+	*outtime = (char *) calloc(20, sizeof(char));
+	memcpy(*outtime, pc, 20);
 	return 0;
 }
 
@@ -196,7 +246,7 @@ int start_record(struct WaveHeader *hdr, int envl)
 	snd_pcm_hw_params_t *params;
 	unsigned int sampleRate = hdr->sample_rate;
 	snd_pcm_uframes_t frames = 64;
-	char *buffer,*nowtime;
+	char *buffer, *nowtime;
 	char totalBuff[6000000] = { 0 };
 	time_t starttimes = start_time_s();
 	//pcm数据最大不会超过32767，所以大于323767没有意义了
@@ -210,7 +260,8 @@ int start_record(struct WaveHeader *hdr, int envl)
 		vladd = base_set.voice_threshold;
 	}
 	/* Open PCM device for recording (capture). */
-	err = snd_pcm_open(&handle, base_set.default_record_device, SND_PCM_STREAM_CAPTURE, 0);
+	err = snd_pcm_open(&handle, base_set.default_record_device,
+			SND_PCM_STREAM_CAPTURE, 0);
 	if (err)
 	{
 		err_log("Unable to open PCM device: %s\n", snd_strerror(err));
@@ -343,6 +394,16 @@ int start_record(struct WaveHeader *hdr, int envl)
 			snd_pcm_close(handle);
 			free(buffer);
 			return err;
+		}
+		//如果是树莓派，将会对采集到的音频进行电子放大
+		if (other_set.is_raspi == 1)
+		{
+			char *tmpbuf = (char *) calloc(1, sizeof(char));
+			pcm_volume_control(buffer, size, &tmpbuf,
+					other_set.mic_soundamp_factor);
+			memset(buffer, 0, size);
+			memcpy(buffer, tmpbuf, size);
+			free(tmpbuf);
 		}
 		int avr = pcm_db_average(buffer, size);
 		//有时候开始获取音频之后的前几次采集音量会非常大。这么做是为了消除异常。REMOVE_ENTERFACE_TIME 表示去掉的帧数
@@ -499,7 +560,8 @@ int test_envirment_volume(struct WaveHeader *hdr)
 	snd_pcm_uframes_t frames = 64;
 	char *buffer;
 	/* Open PCM device for recording (capture). */
-	err = snd_pcm_open(&handle, base_set.default_record_device, SND_PCM_STREAM_CAPTURE, 0);
+	err = snd_pcm_open(&handle, base_set.default_record_device,
+			SND_PCM_STREAM_CAPTURE, 0);
 	if (err)
 	{
 		err_log("Unable to open PCM device: %s\n", snd_strerror(err));
@@ -632,6 +694,16 @@ int test_envirment_volume(struct WaveHeader *hdr)
 			free(buffer);
 			return -13;
 		}
+		//如果是树莓派，将会对采集到的音频进行电子放大
+		if (other_set.is_raspi == 1)
+		{
+			char *tmpbuf = (char *) calloc(1, sizeof(char));
+			pcm_volume_control(buffer, size, &tmpbuf,
+					other_set.mic_soundamp_factor);
+			memset(buffer, 0, size);
+			memcpy(buffer, tmpbuf, size);
+			free(tmpbuf);
+		}
 		int avrframe = pcm_db_average(buffer, size);
 		//printf("Size:%d  avrframe:%d frames:%d\n",size,avrframe,frames);
 		//消除异常数据
@@ -670,7 +742,8 @@ int init_record()
 {
 	int err, retry = 0;
 	struct WaveHeader *hdr;
-	hdr = generic_wav_header(base_set.simple_rate, base_set.bit_depth, base_set.channels);
+	hdr = generic_wav_header(base_set.simple_rate, base_set.bit_depth,
+			base_set.channels);
 	int testtime = 0.008 * base_set.test_envir_time;
 	if (!hdr)
 	{
