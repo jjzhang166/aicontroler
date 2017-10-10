@@ -35,7 +35,7 @@
  * 值范围 1 - 100 表示放大倍数
  * 有且仅当上面值为1时，这个值才会起作用
  */
-#define MIC_SOUNDAMP_FACTOR 40
+#define MIC_SOUNDAMP_FACTOR 10
 
 /*
  * 是否保存百度返回的tts文件
